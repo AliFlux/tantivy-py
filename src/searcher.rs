@@ -101,13 +101,15 @@ impl Searcher {
     ///     weight_by_field (Field, optional): A schema field increases the
     ///         score of the document by the given value. It should be a fast
     ///         field of float data type
+    ///     weight_boost (float, optional): Multiplier for the weight_by_field
+    ///         document scoring. Defaults to 1.0
     ///     offset (Field, optional): The offset from which the results have
     ///         to be returned.
     ///
     /// Returns `SearchResult` object.
     ///
     /// Raises a ValueError if there was an error with the search.
-    #[args(limit = 10, offset = 0, count = true)]
+    #[args(limit = 10, offset = 0, count = true, weight_boost = "1.0")]
     fn search(
         &self,
         _py: Python,
@@ -117,6 +119,7 @@ impl Searcher {
         count_facets_by_field: Option<&str>,
         order_by_field: Option<&str>,
         weight_by_field: Option<&str>,
+        weight_boost: f32,
         offset: usize,
     ) -> PyResult<SearchResult> {
         let mut multicollector = MultiCollector::new();
@@ -147,7 +150,7 @@ impl Searcher {
                         let weight_reader = segment_reader.fast_fields().f64(field).unwrap();
                         return move |doc: DocId, original_score: Score| {
                             let weight: f64 = weight_reader.get(doc);
-                            let new_score = original_score + weight as f32;
+                            let new_score = original_score * (1.0 + weight as f32 * weight_boost);
                             return new_score
                         }
                     });

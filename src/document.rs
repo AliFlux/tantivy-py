@@ -168,6 +168,9 @@ pub(crate) fn extract_value(any: &PyAny) -> PyResult<Value> {
     if let Ok(num) = any.extract::<f64>() {
         return Ok(Value::F64(num));
     }
+    if let Ok(nums) = any.extract::<Vec<u8>>() {
+        return Ok(Value::Bytes(nums));
+    }
     if let Ok(py_datetime) = any.downcast::<PyDateTime>() {
         let datetime = Utc
             .ymd(

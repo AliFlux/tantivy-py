@@ -48,6 +48,8 @@ impl SchemaBuilder {
     ///     stored (bool, optional): If true sets the field as stored, the
     ///         content of the field can be later restored from a Searcher.
     ///         Defaults to False.
+    ///     fieldnorms (bool, optional): If true, computes the fieldnorms
+    ///         of the terms. Defaults to True.
     ///     tokenizer_name (str, optional): The name of the tokenizer that
     ///         should be used to process the field. Defaults to 'default'
     ///     index_option (str, optional): Sets which information should be
@@ -62,6 +64,7 @@ impl SchemaBuilder {
     /// Raises a ValueError if there was an error with the field creation.
     #[args(
         stored = false,
+        fieldnorms = true,
         tokenizer_name = "TOKENIZER",
         index_option = "RECORD"
     )]
@@ -69,12 +72,14 @@ impl SchemaBuilder {
         &mut self,
         name: &str,
         stored: bool,
+        fieldnorms: bool,
         tokenizer_name: &str,
         index_option: &str,
     ) -> PyResult<Self> {
         let builder = &mut self.builder;
         let options = SchemaBuilder::build_text_option(
             stored,
+            fieldnorms,
             tokenizer_name,
             index_option,
         )?;
@@ -266,6 +271,8 @@ impl SchemaBuilder {
     ///     stored (bool, optional): If true sets the field as stored, the
     ///         content of the field can be later restored from a Searcher.
     ///         Defaults to False.
+    ///     fieldnorms (bool, optional): If true, computes the fieldnorms
+    ///         of the terms. Defaults to True.
     ///     tokenizer_name (str, optional): The name of the tokenizer that
     ///         should be used to process the field. Defaults to 'default'
     ///     index_option (str, optional): Sets which information should be
@@ -280,6 +287,7 @@ impl SchemaBuilder {
     /// Raises a ValueError if there was an error with the field creation.
     #[args(
         stored = false,
+        fieldnorms = true,
         tokenizer_name = "TOKENIZER",
         index_option = "RECORD"
     )]
@@ -287,12 +295,14 @@ impl SchemaBuilder {
         &mut self,
         name: &str,
         stored: bool,
+        fieldnorms: bool,
         tokenizer_name: &str,
         index_option: &str,
     ) -> PyResult<Self> {
         let builder = &mut self.builder;
         let options = SchemaBuilder::build_text_option(
             stored,
+            fieldnorms,
             tokenizer_name,
             index_option,
         )?;
@@ -432,6 +442,7 @@ impl SchemaBuilder {
 
     fn build_text_option(
         stored: bool,
+        fieldnorms: bool,
         tokenizer_name: &str,
         index_option: &str,
     ) -> PyResult<schema::TextOptions> {
@@ -446,6 +457,7 @@ impl SchemaBuilder {
 
         let indexing = schema::TextFieldIndexing::default()
             .set_tokenizer(tokenizer_name)
+            .set_fieldnorms(fieldnorms)
             .set_index_option(index_option);
 
         let options =
